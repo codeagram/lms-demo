@@ -766,7 +766,7 @@ export class DatabaseStorage implements IStorage {
 
     await db.insert(accounts).values(defaultAccounts);
 
-    // Create sample customers
+    // Create comprehensive sample customers
     const customers = [
       {
         fullName: 'Rajesh Kumar Singh',
@@ -783,11 +783,46 @@ export class DatabaseStorage implements IStorage {
         idNumber: 'FGHIJ5678K',
       },
       {
-        fullName: 'Suresh Gupta',
-        phone: '+91 9234567890',
-        email: 'suresh.gupta@email.com',
-        address: '789 Garden Road, Bangalore',
-        idNumber: 'KLMNO9012P',
+        fullName: 'Amit Sharma',
+        phone: '+91 8765432109',
+        email: 'amit.sharma@email.com',
+        address: '789 Business District, Bangalore',
+        idNumber: 'LMNOP9012Q',
+      },
+      {
+        fullName: 'Sunita Patel',
+        phone: '+91 7654321098',
+        email: 'sunita.patel@email.com',
+        address: '321 Garden Road, Pune',
+        idNumber: 'RSTUV3456W',
+      },
+      {
+        fullName: 'Vikram Reddy',
+        phone: '+91 6543210987',
+        email: 'vikram.reddy@email.com',
+        address: '654 Tech Park, Hyderabad',
+        idNumber: 'XYZAB7890C',
+      },
+      {
+        fullName: 'Neeta Agarwal',
+        phone: '+91 5432109876',
+        email: 'neeta.agarwal@email.com',
+        address: '987 Commercial Street, Kolkata',
+        idNumber: 'DEFGH2345I',
+      },
+      {
+        fullName: 'Rahul Mehta',
+        phone: '+91 4321098765',
+        email: 'rahul.mehta@email.com',
+        address: '654 Industrial Area, Ahmedabad',
+        idNumber: 'JKLMN6789O',
+      },
+      {
+        fullName: 'Kavita Joshi',
+        phone: '+91 3210987654',
+        email: 'kavita.joshi@email.com',
+        address: '852 Residential Complex, Jaipur',
+        idNumber: 'PQRST0123U',
       },
     ];
 
@@ -795,56 +830,312 @@ export class DatabaseStorage implements IStorage {
       await this.createCustomer(customer);
     }
 
-    // Create sample assets and loans
+    // Create diverse assets
     const sampleCustomers = await this.getCustomers();
-    if (sampleCustomers.length >= 2) {
-      // Create assets
-      const asset1 = await this.createAsset({
-        type: 'Bike',
-        make: 'Honda',
-        model: 'Activa',
-        registrationNumber: 'DL01AB1234',
-        estimatedValue: '80000',
-      });
+    const assets = [];
+    
+    if (sampleCustomers.length >= 6) {
+      assets.push(
+        await this.createAsset({
+          type: 'Bike',
+          make: 'Honda',
+          model: 'Activa',
+          registrationNumber: 'DL01AB1234',
+          estimatedValue: '80000',
+        }),
+        await this.createAsset({
+          type: 'Car',
+          make: 'Maruti',
+          model: 'Swift',
+          registrationNumber: 'MH02CD5678',
+          estimatedValue: '300000',
+        }),
+        await this.createAsset({
+          type: 'Bike',
+          make: 'Yamaha',
+          model: 'FZ',
+          registrationNumber: 'KA03EF9012',
+          estimatedValue: '95000',
+        }),
+        await this.createAsset({
+          type: 'Car',
+          make: 'Hyundai',
+          model: 'i20',
+          registrationNumber: 'MH12GH3456',
+          estimatedValue: '450000',
+        }),
+        await this.createAsset({
+          type: 'Truck',
+          make: 'Tata',
+          model: 'Ace',
+          registrationNumber: 'AP09IJ7890',
+          estimatedValue: '650000',
+        }),
+        await this.createAsset({
+          type: 'Property',
+          make: 'Residential',
+          model: 'Apartment',
+          registrationNumber: 'PROP001',
+          estimatedValue: '2500000',
+        }),
+        await this.createAsset({
+          type: 'Machinery',
+          make: 'JCB',
+          model: '3DX',
+          registrationNumber: 'MACH001',
+          estimatedValue: '1200000',
+        }),
+        await this.createAsset({
+          type: 'Car',
+          make: 'Toyota',
+          model: 'Innova',
+          registrationNumber: 'RJ14XY7890',
+          estimatedValue: '800000',
+        })
+      );
 
-      const asset2 = await this.createAsset({
-        type: 'Car',
-        make: 'Maruti',
-        model: 'Swift',
-        registrationNumber: 'MH02CD5678',
-        estimatedValue: '300000',
-      });
+      // Create comprehensive loan portfolio with different statuses
+      const loans = [];
+      
+      // Pending loans (awaiting approval)
+      loans.push(
+        await this.createLoan({
+          customerId: sampleCustomers[0].id,
+          assetId: assets[0].id,
+          principalAmount: '250000',
+          interestRate: '12.00',
+          interestType: 'reducing',
+          tenure: 24,
+          repaymentFrequency: 'monthly',
+          gracePeriod: 5,
+          startDate: '2024-12-01',
+          status: 'pending',
+          notes: 'Vehicle loan for Honda Activa - excellent credit history, regular income',
+          createdBy: staffUser.id,
+        }),
+        await this.createLoan({
+          customerId: sampleCustomers[1].id,
+          assetId: assets[1].id,
+          principalAmount: '175000',
+          interestRate: '15.00',
+          interestType: 'flat',
+          tenure: 18,
+          repaymentFrequency: 'monthly',
+          gracePeriod: 3,
+          startDate: '2024-11-15',
+          status: 'pending',
+          notes: 'Vehicle loan for Maruti Swift - first time borrower, good employment record',
+          createdBy: staffUser.id,
+        })
+      );
 
-      // Create sample loans
-      await this.createLoan({
-        customerId: sampleCustomers[0].id,
-        assetId: asset1.id,
-        principalAmount: '250000',
-        interestRate: '12.00',
-        interestType: 'reducing',
-        tenure: 24,
-        repaymentFrequency: 'monthly',
-        gracePeriod: 5,
-        startDate: '2024-12-01',
-        status: 'pending',
-        notes: 'Vehicle loan for Honda Activa',
-        createdBy: staffUser.id,
-      });
+      // Active loans (approved and disbursed)
+      loans.push(
+        await this.createLoan({
+          customerId: sampleCustomers[2].id,
+          assetId: assets[2].id,
+          principalAmount: '85000',
+          interestRate: '14.50',
+          interestType: 'reducing',
+          tenure: 12,
+          repaymentFrequency: 'monthly',
+          gracePeriod: 7,
+          startDate: '2024-06-01',
+          status: 'active',
+          notes: 'Quick loan for Yamaha FZ - business expansion, fast approval needed',
+          createdBy: staffUser.id,
+        }),
+        await this.createLoan({
+          customerId: sampleCustomers[3].id,
+          assetId: assets[3].id,
+          principalAmount: '380000',
+          interestRate: '11.50',
+          interestType: 'reducing',
+          tenure: 36,
+          repaymentFrequency: 'monthly',
+          gracePeriod: 5,
+          startDate: '2024-03-15',
+          status: 'active',
+          notes: 'Family car loan for Hyundai i20 - premium customer, long relationship',
+          createdBy: staffUser.id,
+        }),
+        await this.createLoan({
+          customerId: sampleCustomers[4].id,
+          assetId: assets[4].id,
+          principalAmount: '550000',
+          interestRate: '16.00',
+          interestType: 'flat',
+          tenure: 48,
+          repaymentFrequency: 'monthly',
+          gracePeriod: 10,
+          startDate: '2024-01-01',
+          status: 'active',
+          notes: 'Commercial vehicle loan for Tata Ace - logistics business expansion',
+          createdBy: staffUser.id,
+        }),
+        await this.createLoan({
+          customerId: sampleCustomers[5].id,
+          assetId: assets[5].id,
+          principalAmount: '1800000',
+          interestRate: '10.50',
+          interestType: 'reducing',
+          tenure: 180,
+          repaymentFrequency: 'monthly',
+          gracePeriod: 15,
+          startDate: '2023-12-01',
+          status: 'active',
+          notes: 'Home loan for residential apartment - long term investment, stable income',
+          createdBy: adminUser.id,
+        }),
+        await this.createLoan({
+          customerId: sampleCustomers[6].id,
+          assetId: assets[6].id,
+          principalAmount: '950000',
+          interestRate: '18.00',
+          interestType: 'flat',
+          tenure: 60,
+          repaymentFrequency: 'monthly',
+          gracePeriod: 5,
+          startDate: '2024-02-01',
+          status: 'active',
+          notes: 'Heavy machinery loan for JCB 3DX - construction business',
+          createdBy: staffUser.id,
+        }),
+        await this.createLoan({
+          customerId: sampleCustomers[7].id,
+          assetId: assets[7].id,
+          principalAmount: '650000',
+          interestRate: '13.50',
+          interestType: 'reducing',
+          tenure: 60,
+          repaymentFrequency: 'monthly',
+          gracePeriod: 7,
+          startDate: '2024-04-01',
+          status: 'active',
+          notes: 'Family vehicle loan for Toyota Innova - excellent payment history',
+          createdBy: staffUser.id,
+        })
+      );
 
-      await this.createLoan({
-        customerId: sampleCustomers[1].id,
-        assetId: asset2.id,
-        principalAmount: '175000',
-        interestRate: '15.00',
-        interestType: 'flat',
-        tenure: 18,
-        repaymentFrequency: 'monthly',
-        gracePeriod: 3,
-        startDate: '2024-11-15',
-        status: 'pending',
-        notes: 'Vehicle loan for Maruti Swift',
-        createdBy: staffUser.id,
-      });
+      // Generate EMI schedules for active loans
+      for (const loan of loans) {
+        if (loan.status === 'active') {
+          await this.generateEMISchedule(loan.id);
+        }
+      }
+
+      // Create realistic payment records
+      const activeLoans = loans.filter(loan => loan.status === 'active');
+      if (activeLoans.length > 0) {
+        // Payments for first active loan (multiple payments)
+        await this.createPayment({
+          loanId: activeLoans[0].id,
+          amount: '8500.00',
+          paymentDate: new Date('2024-07-01'),
+          paymentMethod: 'bank_transfer',
+          notes: 'First EMI payment - on time via NEFT',
+          createdBy: staffUser.id,
+        });
+        
+        await this.createPayment({
+          loanId: activeLoans[0].id,
+          amount: '8500.00',
+          paymentDate: new Date('2024-08-01'),
+          paymentMethod: 'cash',
+          notes: 'Second EMI payment - cash collection at branch',
+          createdBy: staffUser.id,
+        });
+
+        await this.createPayment({
+          loanId: activeLoans[0].id,
+          amount: '8500.00',
+          paymentDate: new Date('2024-09-01'),
+          paymentMethod: 'cheque',
+          notes: 'Third EMI payment - cheque cleared successfully',
+          createdBy: staffUser.id,
+        });
+
+        // Payments for second active loan
+        if (activeLoans.length > 1) {
+          await this.createPayment({
+            loanId: activeLoans[1].id,
+            amount: '15000.00',
+            paymentDate: new Date('2024-04-15'),
+            paymentMethod: 'bank_transfer',
+            notes: 'Regular EMI payment - auto debit',
+            createdBy: staffUser.id,
+          });
+
+          await this.createPayment({
+            loanId: activeLoans[1].id,
+            amount: '15000.00',
+            paymentDate: new Date('2024-05-15'),
+            paymentMethod: 'bank_transfer',
+            notes: 'EMI payment via UPI',
+            createdBy: staffUser.id,
+          });
+
+          await this.createPayment({
+            loanId: activeLoans[1].id,
+            amount: '15000.00',
+            paymentDate: new Date('2024-06-15'),
+            paymentMethod: 'online',
+            notes: 'EMI payment via net banking',
+            createdBy: staffUser.id,
+          });
+        }
+
+        // Payments for third active loan
+        if (activeLoans.length > 2) {
+          await this.createPayment({
+            loanId: activeLoans[2].id,
+            amount: '60000.00',
+            paymentDate: new Date('2024-02-01'),
+            paymentMethod: 'bank_transfer',
+            notes: 'Business loan EMI - regular payment',
+            createdBy: staffUser.id,
+          });
+
+          await this.createPayment({
+            loanId: activeLoans[2].id,
+            amount: '60000.00',
+            paymentDate: new Date('2024-03-01'),
+            paymentMethod: 'cheque',
+            notes: 'Business loan EMI - company cheque',
+            createdBy: staffUser.id,
+          });
+        }
+
+        // Payments for home loan (larger amounts)
+        if (activeLoans.length > 3) {
+          await this.createPayment({
+            loanId: activeLoans[3].id,
+            amount: '18500.00',
+            paymentDate: new Date('2024-01-01'),
+            paymentMethod: 'bank_transfer',
+            notes: 'Home loan EMI - January payment',
+            createdBy: staffUser.id,
+          });
+
+          await this.createPayment({
+            loanId: activeLoans[3].id,
+            amount: '18500.00',
+            paymentDate: new Date('2024-02-01'),
+            paymentMethod: 'bank_transfer',
+            notes: 'Home loan EMI - February payment',
+            createdBy: staffUser.id,
+          });
+
+          await this.createPayment({
+            loanId: activeLoans[3].id,
+            amount: '18500.00',
+            paymentDate: new Date('2024-03-01'),
+            paymentMethod: 'bank_transfer',
+            notes: 'Home loan EMI - March payment',
+            createdBy: staffUser.id,
+          });
+        }
+      }
     }
   }
 }

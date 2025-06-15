@@ -434,8 +434,10 @@ export default function LoansTable({
               <div className="flex gap-3 pt-6 border-t border-gray-200">
                 <Button
                   onClick={() => {
-                    setSelectedLoan(null);
-                    onEdit(selectedLoan);
+                    if (selectedLoan) {
+                      setSelectedLoan(null);
+                      onEdit(selectedLoan);
+                    }
                   }}
                   variant="outline"
                   className="flex items-center gap-2 px-6 py-3"
@@ -446,8 +448,10 @@ export default function LoansTable({
                 {selectedLoan.status === 'pending' && canApprove && (
                   <Button
                     onClick={() => {
-                      setSelectedLoan(null);
-                      onApprove(selectedLoan);
+                      if (selectedLoan) {
+                        setSelectedLoan(null);
+                        onApprove(selectedLoan);
+                      }
                     }}
                     className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700"
                   >
