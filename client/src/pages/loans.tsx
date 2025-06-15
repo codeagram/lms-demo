@@ -273,7 +273,7 @@ export default function Loans() {
                       <SelectValue placeholder="Amount Range" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Amounts</SelectItem>
+                      <SelectItem value="all">All Amounts</SelectItem>
                       <SelectItem value="0-100000">₹0 - ₹1L</SelectItem>
                       <SelectItem value="100000-500000">₹1L - ₹5L</SelectItem>
                       <SelectItem value="500000+">₹5L+</SelectItem>

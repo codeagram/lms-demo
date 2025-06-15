@@ -130,7 +130,7 @@ export default function Payments() {
 
   const resetFilters = () => {
     setSearchTerm("");
-    setStatusFilter("");
+    setStatusFilter("all");
     setDueDateFrom("");
     setDueDateTo("");
   };
@@ -279,7 +279,7 @@ export default function Payments() {
                   <SelectValue placeholder="All Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Status</SelectItem>
+                  <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="paid">Paid</SelectItem>
                   <SelectItem value="unpaid">Unpaid</SelectItem>
                   <SelectItem value="overdue">Overdue</SelectItem>

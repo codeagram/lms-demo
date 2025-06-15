@@ -123,8 +123,8 @@ export default function Accounting() {
   });
 
   const resetFilters = () => {
-    setAccountFilter("");
-    setTransactionTypeFilter("");
+    setAccountFilter("all");
+    setTransactionTypeFilter("all");
     setDateFrom("");
     setDateTo("");
   };
@@ -272,7 +272,7 @@ export default function Accounting() {
                   <SelectValue placeholder="All Accounts" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Accounts</SelectItem>
+                  <SelectItem value="all">All Accounts</SelectItem>
                   {accounts?.map(account => (
                     <SelectItem key={account.id} value={account.id.toString()}>
                       {account.accountName}
@@ -287,7 +287,7 @@ export default function Accounting() {
                   <SelectValue placeholder="All Types" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Types</SelectItem>
+                  <SelectItem value="all">All Types</SelectItem>
                   <SelectItem value="disbursement">Loan Disbursement</SelectItem>
                   <SelectItem value="payment">EMI Payment</SelectItem>
                   <SelectItem value="penalty">Penalty Collection</SelectItem>
