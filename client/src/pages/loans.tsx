@@ -98,7 +98,7 @@ export default function Loans() {
 
     const matchesStatus = statusFilter === "all" || loan.status === statusFilter;
 
-    const matchesAmount = !amountFilter || (() => {
+    const matchesAmount = !amountFilter || amountFilter === "all" || (() => {
       const amount = parseFloat(loan.principalAmount);
       switch (amountFilter) {
         case "0-100000": return amount <= 100000;
@@ -108,7 +108,7 @@ export default function Loans() {
       }
     })();
 
-    const matchesInterestType = !interestTypeFilter || loan.interestType === interestTypeFilter;
+    const matchesInterestType = !interestTypeFilter || interestTypeFilter === "all" || loan.interestType === interestTypeFilter;
 
     return matchesSearch && matchesStatus && matchesAmount && matchesInterestType;
   }) || [];
@@ -149,8 +149,8 @@ export default function Loans() {
   const resetFilters = () => {
     setSearchTerm("");
     setStatusFilter("all");
-    setAmountFilter("");
-    setInterestTypeFilter("");
+    setAmountFilter("all");
+    setInterestTypeFilter("all");
   };
 
   const exportLoans = () => {
@@ -286,7 +286,7 @@ export default function Loans() {
                       <SelectValue placeholder="Interest Type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Types</SelectItem>
+                      <SelectItem value="all">All Types</SelectItem>
                       <SelectItem value="flat">Flat</SelectItem>
                       <SelectItem value="reducing">Reducing Balance</SelectItem>
                     </SelectContent>

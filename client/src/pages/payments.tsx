@@ -108,7 +108,7 @@ export default function Payments() {
       emi.loan.loanId.toLowerCase().includes(searchTerm.toLowerCase()) ||
       emi.loan.customer.fullName.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesStatus = !statusFilter || emi.status === statusFilter;
+    const matchesStatus = !statusFilter || statusFilter === "all" || emi.status === statusFilter;
 
     const matchesDateFrom = !dueDateFrom || emi.dueDate >= dueDateFrom;
     const matchesDateTo = !dueDateTo || emi.dueDate <= dueDateTo;
