@@ -25,6 +25,8 @@ export default function Login() {
         description: "Welcome to Loan Management System",
         variant: "default",
       });
+      // Force page reload to ensure proper state update
+      window.location.href = "/";
     } catch (error) {
       toast({
         title: "Login Failed",
