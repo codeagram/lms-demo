@@ -188,11 +188,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getCustomers(branchId?: number): Promise<Customer[]> {
-    let query = db.select().from(customers).where(eq(customers.isActive, true));
     if (branchId) {
-      query = query.where(eq(customers.branchId, branchId));
+      return await db.select().from(customers).where(and(eq(customers.isActive, true), eq(customers.branchId, branchId)));
     }
-    return await query;
+    return await db.select().from(customers).where(eq(customers.isActive, true));
   }
 
   async getCustomerById(id: number): Promise<CustomerWithLoans | undefined> {
@@ -828,12 +827,32 @@ export class DatabaseStorage implements IStorage {
     const existingUsers = await db.select().from(users).limit(1);
     if (existingUsers.length > 0) return;
 
+    // Create branches first
+    const chennaBranch = await this.createBranch({
+      branchCode: 'CHN001',
+      branchName: 'Chennai Branch',
+      location: 'Chennai',
+      address: '123 Anna Salai, Chennai, Tamil Nadu 600002',
+      phone: '+91 44 12345678',
+      email: 'chennai@lms.com',
+    });
+
+    const delhiBranch = await this.createBranch({
+      branchCode: 'DEL001', 
+      branchName: 'Delhi Branch',
+      location: 'Delhi',
+      address: '456 Connaught Place, New Delhi 110001',
+      phone: '+91 11 87654321',
+      email: 'delhi@lms.com',
+    });
+
     // Create default users
     const adminUser = await this.createUser({
       email: 'admin@lms.com',
       password: 'admin123', // In real app, this should be hashed
       fullName: 'Admin User',
       role: 'admin',
+      branchId: null, // Admin has access to all branches
     });
 
     const staffUser = await this.createUser({
@@ -841,6 +860,7 @@ export class DatabaseStorage implements IStorage {
       password: 'staff123', // In real app, this should be hashed
       fullName: 'Staff User',
       role: 'staff',
+      branchId: chennaBranch.id, // Staff assigned to Chennai branch
     });
 
     // Create default accounts for double-entry accounting
@@ -853,7 +873,7 @@ export class DatabaseStorage implements IStorage {
 
     await db.insert(accounts).values(defaultAccounts);
 
-    // Create comprehensive sample customers
+    // Create comprehensive sample customers with branch assignments
     const customers = [
       {
         fullName: 'Rajesh Kumar Singh',
@@ -861,6 +881,10 @@ export class DatabaseStorage implements IStorage {
         email: 'rajesh.kumar@email.com',
         address: '123 Main Street, New Delhi',
         idNumber: 'ABCDE1234F',
+        branchId: delhiBranch.id,
+        referralCode: 'REF001',
+        panNumber: 'ABCDE1234F',
+        aadhaarNumber: '123456789012',
       },
       {
         fullName: 'Priya Singh',
@@ -868,6 +892,10 @@ export class DatabaseStorage implements IStorage {
         email: 'priya.singh@email.com',
         address: '456 Park Avenue, Mumbai',
         idNumber: 'FGHIJ5678K',
+        branchId: chennaBranch.id,
+        referralCode: 'REF002',
+        panNumber: 'FGHIJ5678K',
+        aadhaarNumber: '234567890123',
       },
       {
         fullName: 'Amit Sharma',
@@ -875,6 +903,10 @@ export class DatabaseStorage implements IStorage {
         email: 'amit.sharma@email.com',
         address: '789 Business District, Bangalore',
         idNumber: 'LMNOP9012Q',
+        branchId: delhiBranch.id,
+        referralCode: 'REF003',
+        panNumber: 'LMNOP9012Q',
+        aadhaarNumber: '345678901234',
       },
       {
         fullName: 'Sunita Patel',
@@ -882,6 +914,10 @@ export class DatabaseStorage implements IStorage {
         email: 'sunita.patel@email.com',
         address: '321 Garden Road, Pune',
         idNumber: 'RSTUV3456W',
+        branchId: chennaBranch.id,
+        referralCode: 'REF004',
+        panNumber: 'RSTUV3456W',
+        aadhaarNumber: '456789012345',
       },
       {
         fullName: 'Vikram Reddy',
@@ -889,6 +925,9 @@ export class DatabaseStorage implements IStorage {
         email: 'vikram.reddy@email.com',
         address: '654 Tech Park, Hyderabad',
         idNumber: 'XYZAB7890C',
+        branchId: delhiBranch.id,
+        panNumber: 'XYZAB7890C',
+        aadhaarNumber: '567890123456',
       },
       {
         fullName: 'Neeta Agarwal',
@@ -896,6 +935,9 @@ export class DatabaseStorage implements IStorage {
         email: 'neeta.agarwal@email.com',
         address: '987 Commercial Street, Kolkata',
         idNumber: 'DEFGH2345I',
+        branchId: chennaBranch.id,
+        panNumber: 'DEFGH2345I',
+        aadhaarNumber: '678901234567',
       },
       {
         fullName: 'Rahul Mehta',
@@ -903,6 +945,9 @@ export class DatabaseStorage implements IStorage {
         email: 'rahul.mehta@email.com',
         address: '654 Industrial Area, Ahmedabad',
         idNumber: 'JKLMN6789O',
+        branchId: delhiBranch.id,
+        panNumber: 'JKLMN6789O',
+        aadhaarNumber: '789012345678',
       },
       {
         fullName: 'Kavita Joshi',
@@ -910,6 +955,9 @@ export class DatabaseStorage implements IStorage {
         email: 'kavita.joshi@email.com',
         address: '852 Residential Complex, Jaipur',
         idNumber: 'PQRST0123U',
+        branchId: chennaBranch.id,
+        panNumber: 'PQRST0123U',
+        aadhaarNumber: '890123456789',
       },
     ];
 
@@ -929,6 +977,7 @@ export class DatabaseStorage implements IStorage {
           model: 'Activa',
           registrationNumber: 'DL01AB1234',
           estimatedValue: '80000',
+          branchId: delhiBranch.id,
         }),
         await this.createAsset({
           type: 'Car',
@@ -936,6 +985,7 @@ export class DatabaseStorage implements IStorage {
           model: 'Swift',
           registrationNumber: 'MH02CD5678',
           estimatedValue: '300000',
+          branchId: chennaBranch.id,
         }),
         await this.createAsset({
           type: 'Bike',
@@ -943,6 +993,7 @@ export class DatabaseStorage implements IStorage {
           model: 'FZ',
           registrationNumber: 'KA03EF9012',
           estimatedValue: '95000',
+          branchId: delhiBranch.id,
         }),
         await this.createAsset({
           type: 'Car',
@@ -950,6 +1001,7 @@ export class DatabaseStorage implements IStorage {
           model: 'i20',
           registrationNumber: 'MH12GH3456',
           estimatedValue: '450000',
+          branchId: chennaBranch.id,
         }),
         await this.createAsset({
           type: 'Truck',
@@ -957,6 +1009,7 @@ export class DatabaseStorage implements IStorage {
           model: 'Ace',
           registrationNumber: 'AP09IJ7890',
           estimatedValue: '650000',
+          branchId: delhiBranch.id,
         }),
         await this.createAsset({
           type: 'Property',
@@ -964,6 +1017,7 @@ export class DatabaseStorage implements IStorage {
           model: 'Apartment',
           registrationNumber: 'PROP001',
           estimatedValue: '2500000',
+          branchId: chennaBranch.id,
         }),
         await this.createAsset({
           type: 'Machinery',
@@ -971,6 +1025,7 @@ export class DatabaseStorage implements IStorage {
           model: '3DX',
           registrationNumber: 'MACH001',
           estimatedValue: '1200000',
+          branchId: delhiBranch.id,
         }),
         await this.createAsset({
           type: 'Car',
@@ -978,6 +1033,7 @@ export class DatabaseStorage implements IStorage {
           model: 'Innova',
           registrationNumber: 'RJ14XY7890',
           estimatedValue: '800000',
+          branchId: chennaBranch.id,
         })
       );
 
