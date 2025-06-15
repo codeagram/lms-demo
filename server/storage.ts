@@ -9,6 +9,9 @@ import {
   journalEntries,
   journalEntryLines,
   auditLog,
+  loanWorkflowSteps,
+  customFieldDefinitions,
+  systemConfig,
   type User,
   type InsertUser,
   type Customer,
@@ -28,6 +31,12 @@ import {
   type InsertJournalEntry,
   type JournalEntryLine,
   type AuditLog,
+  type LoanWorkflowStep,
+  type InsertLoanWorkflowStep,
+  type CustomFieldDefinition,
+  type InsertCustomFieldDefinition,
+  type SystemConfig,
+  type InsertSystemConfig,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, sql, or, like, inArray } from "drizzle-orm";

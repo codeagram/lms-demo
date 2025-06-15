@@ -435,3 +435,12 @@ export type PaymentWithDetails = Payment & {
   emi?: EMISchedule;
   createdBy: User;
 };
+
+export type LoanWorkflowStep = typeof loanWorkflowSteps.$inferSelect;
+export type InsertLoanWorkflowStep = z.infer<typeof insertLoanWorkflowStepSchema>;
+
+export type CustomFieldDefinition = typeof customFieldDefinitions.$inferSelect;
+export type InsertCustomFieldDefinition = z.infer<typeof insertCustomFieldDefinitionSchema>;
+
+export type SystemConfig = typeof systemConfig.$inferSelect;
+export type InsertSystemConfig = z.infer<typeof insertSystemConfigSchema>;
