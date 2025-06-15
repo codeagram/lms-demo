@@ -11,7 +11,10 @@ import {
   Settings,
   Building2,
   LogOut,
-  User
+  User,
+  GitBranch,
+  Shield,
+  CheckCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +22,8 @@ const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard, roles: ['admin', 'staff'] },
   { name: 'Customers', href: '/customers', icon: Users, roles: ['admin', 'staff'] },
   { name: 'Loans', href: '/loans', icon: CreditCard, roles: ['admin', 'staff'] },
+  { name: 'Workflow', href: '/workflow', icon: GitBranch, roles: ['admin', 'staff'] },
+  { name: 'KYC Verification', href: '/kyc-verification', icon: CheckCircle, roles: ['admin', 'staff'] },
   { name: 'Payments', href: '/payments', icon: Wallet, roles: ['admin', 'staff'] },
   { name: 'Accounting', href: '/accounting', icon: Calculator, roles: ['admin', 'staff'] },
   { name: 'Reports', href: '/reports', icon: FileText, roles: ['admin', 'staff'] },

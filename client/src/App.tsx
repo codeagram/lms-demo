@@ -28,6 +28,8 @@ function AuthenticatedApp() {
             <Route path="/" component={Dashboard} />
             <Route path="/customers" component={Customers} />
             <Route path="/loans" component={Loans} />
+            <Route path="/workflow" component={Workflow} />
+            <Route path="/kyc-verification" component={KYCVerification} />
             <Route path="/payments" component={Payments} />
             <Route path="/accounting" component={Accounting} />
             <Route path="/reports" component={Reports} />

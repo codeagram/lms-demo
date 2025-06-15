@@ -8,10 +8,16 @@ import {
   Calendar,
   User,
   TrendingUp,
-  ArrowUp
+  ArrowUp,
+  GitBranch,
+  CheckCircle,
+  Clock,
+  Shield,
+  TrendingDown
 } from "lucide-react";
 import { formatCurrency } from "@/lib/financial-calculations";
 import { Badge } from "@/components/ui/badge";
+import { Link } from "wouter";
 
 interface DashboardMetrics {
   activeLoans: number;
@@ -43,6 +49,22 @@ export default function Dashboard() {
     queryKey: ["/api/dashboard/metrics"],
   });
 
+  const { data: workflowAlerts } = useQuery<any>({
+    queryKey: ["/api/dashboard/workflow-alerts"],
+  });
+
+  const { data: kycPending } = useQuery<any[]>({
+    queryKey: ["/api/dashboard/kyc-pending"],
+  });
+
+  const { data: upcomingEMIData } = useQuery<any[]>({
+    queryKey: ["/api/dashboard/upcoming-emis"],
+  });
+
+  const { data: overdueEMIs } = useQuery<any[]>({
+    queryKey: ["/api/dashboard/overdue-emis"],
+  });
+
   const { data: loans } = useQuery<RecentLoan[]>({
     queryKey: ["/api/loans"],
   });
@@ -52,7 +74,7 @@ export default function Dashboard() {
   });
 
   const recentLoans = loans?.slice(0, 3) || [];
-  const upcomingEMIs = payments?.slice(0, 3) || [];
+  const upcomingEMIs = upcomingEMIData?.slice(0, 3) || [];
 
   if (metricsLoading) {
     return (
@@ -124,9 +146,8 @@ export default function Dashboard() {
               <div className="flex items-center justify-between mb-4">
                 <div className={`p-3 rounded-lg ${metric.bgColor} group-hover:scale-110 transition-transform duration-200`}>
                   <Icon 
-                    className="h-6 w-6" 
+                    className={`h-6 w-6 ${typeof metric.color === 'string' && !metric.color.startsWith('#') ? metric.color : ''}`}
                     style={{ color: typeof metric.color === 'string' && metric.color.startsWith('#') ? metric.color : undefined }}
-                    {...(typeof metric.color === 'string' && !metric.color.startsWith('#') ? { className: `h-6 w-6 ${metric.color}` } : {})}
                     size={24} 
                   />
                 </div>
