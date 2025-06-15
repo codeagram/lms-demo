@@ -1,0 +1,72 @@
+You are a senior full-stack developer. Extend an existing Loan Management System (LMS) MVP Web App built in Spring Boot (backend) and Angular + PrimeNG (frontend).
+
+---
+
+### 🧩 New Features to Add
+
+1. **Loan Workflow Steps**
+   - Add simulated multi-step approval flow per loan
+   - Steps: Basic Details → Verification → Approval → Disbursement
+   - Each step shows assigned user, approval date, status
+
+2. **Dynamic Fields (Custom Fields)**
+   - Admin can define new fields (text, number, dropdown)
+   - Attach to loan form dynamically (per partner scope not needed for now)
+
+3. **Referral Code Tracking**
+   - On customer creation, optional referral code input
+   - Stored in customer profile, displayed in list
+
+4. **Simulated Agreement / E-Sign**
+   - Final step of loan before activation: “Agreement Signed” toggle
+   - Only Admin can mark as signed
+
+5. **Reapplication Cooldown**
+   - After loan rejection, show “You can reapply after X days”
+   - Configurable number of days
+
+6. **Manual KYC and Employment Verification**
+   - KYC form with:
+     - PAN, Aadhaar fields (mock)
+     - Upload docs (no backend required)
+     - Verification toggle
+   - Employment:
+     - Upload bank/salary slip (mock)
+     - Verification toggle
+
+7. **Interest Types**
+   - Apply correct EMI schedule generation:
+     - Flat: Even split
+     - Reducing: Simulate amortized table (mock formula ok)
+
+8. **Penalty Simulation**
+   - If EMI is overdue past grace period, show penalty per day
+   - Penalty reflects in outstanding balance and accounting entry
+
+9. **Reminder Dashboard**
+   - Show upcoming EMIs, overdue loans as alert cards
+
+10. **Ledger & Journal UI**
+   - Journal allows linking to loan/customer
+   - Show running balance in ledger
+   - Allow manual journal entry with dropdown for debit/credit accounts
+
+11. **Role-Based Feature Access**
+   - Staff: Cannot approve/reject loans, cannot view ledger or journal
+   - Admin: Full access
+
+---
+
+### 🧑‍💻 Stack
+- Angular + PrimeNG for frontend
+- Spring Boot + Spring Data JPA for backend
+- Postgres database
+- Dockerized backend and Postgres using `docker-compose.yml`
+
+---
+
+### 🎯 Objective
+Make this a complete MVP demo for a small finance company without external integrations (no SMS, payments, or KYC APIs). Simulate all steps end-to-end for a loan lifecycle, customer onboarding, and accounting.
+
+Ensure code is modular, clean, and follows best practices. Use mock data where needed. All features must be visually polished and production-simulated.
+

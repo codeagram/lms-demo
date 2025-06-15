@@ -24,6 +24,17 @@ export const customers = pgTable("customers", {
   email: text("email"),
   address: text("address"),
   idNumber: text("id_number").notNull(), // PAN, Aadhaar, etc.
+  referralCode: text("referral_code"), // Optional referral code
+  panNumber: text("pan_number"),
+  aadhaarNumber: text("aadhaar_number"),
+  kycStatus: text("kyc_status").notNull().default("pending"), // 'pending', 'verified', 'rejected'
+  kycVerifiedBy: integer("kyc_verified_by").references(() => users.id),
+  kycVerifiedAt: timestamp("kyc_verified_at"),
+  employmentStatus: text("employment_status").notNull().default("pending"), // 'pending', 'verified', 'rejected'
+  employmentVerifiedBy: integer("employment_verified_by").references(() => users.id),
+  employmentVerifiedAt: timestamp("employment_verified_at"),
+  documents: jsonb("documents"), // Store uploaded document info
+  lastRejectedAt: timestamp("last_rejected_at"), // Track rejection for cooldown
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -55,6 +66,12 @@ export const loans = pgTable("loans", {
   gracePeriod: integer("grace_period").notNull().default(0), // in days
   startDate: date("start_date"),
   status: text("status").notNull().default("draft"), // 'draft', 'pending', 'approved', 'rejected', 'active', 'closed'
+  currentStep: text("current_step").notNull().default("basic_details"), // 'basic_details', 'verification', 'approval', 'disbursement', 'completed'
+  agreementSigned: boolean("agreement_signed").notNull().default(false),
+  agreementSignedBy: integer("agreement_signed_by").references(() => users.id),
+  agreementSignedAt: timestamp("agreement_signed_at"),
+  rejectionReason: text("rejection_reason"),
+  customFields: jsonb("custom_fields"), // Store dynamic field values
   notes: text("notes"),
   emiAmount: decimal("emi_amount", { precision: 12, scale: 2 }),
   totalInterest: decimal("total_interest", { precision: 12, scale: 2 }),
@@ -133,6 +150,43 @@ export const journalEntryLines = pgTable("journal_entry_lines", {
   description: text("description"),
 });
 
+// Loan Workflow Steps table
+export const loanWorkflowSteps = pgTable("loan_workflow_steps", {
+  id: serial("id").primaryKey(),
+  loanId: integer("loan_id").notNull().references(() => loans.id),
+  step: text("step").notNull(), // 'basic_details', 'verification', 'approval', 'disbursement'
+  status: text("status").notNull().default("pending"), // 'pending', 'completed', 'skipped'
+  assignedUserId: integer("assigned_user_id").references(() => users.id),
+  completedBy: integer("completed_by").references(() => users.id),
+  completedAt: timestamp("completed_at"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Dynamic/Custom Fields Definition table
+export const customFieldDefinitions = pgTable("custom_field_definitions", {
+  id: serial("id").primaryKey(),
+  fieldName: text("field_name").notNull(),
+  fieldLabel: text("field_label").notNull(),
+  fieldType: text("field_type").notNull(), // 'text', 'number', 'dropdown', 'boolean'
+  options: jsonb("options"), // For dropdown options
+  isRequired: boolean("is_required").notNull().default(false),
+  isActive: boolean("is_active").notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdBy: integer("created_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// System Configuration table
+export const systemConfig = pgTable("system_config", {
+  id: serial("id").primaryKey(),
+  configKey: text("config_key").notNull().unique(),
+  configValue: text("config_value").notNull(),
+  description: text("description"),
+  updatedBy: integer("updated_by").notNull().references(() => users.id),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Audit Log table
 export const auditLog = pgTable("audit_log", {
   id: serial("id").primaryKey(),
@@ -156,8 +210,18 @@ export const usersRelations = relations(users, ({ many }) => ({
   auditLogs: many(auditLog),
 }));
 
-export const customersRelations = relations(customers, ({ many }) => ({
+export const customersRelations = relations(customers, ({ one, many }) => ({
   loans: many(loans),
+  kycVerifier: one(users, {
+    fields: [customers.kycVerifiedBy],
+    references: [users.id],
+    relationName: "kycVerifier",
+  }),
+  employmentVerifier: one(users, {
+    fields: [customers.employmentVerifiedBy],
+    references: [users.id],
+    relationName: "employmentVerifier",
+  }),
 }));
 
 export const assetsRelations = relations(assets, ({ many }) => ({
@@ -183,8 +247,14 @@ export const loansRelations = relations(loans, ({ one, many }) => ({
     references: [users.id],
     relationName: "loanApprover",
   }),
+  agreementSigner: one(users, {
+    fields: [loans.agreementSignedBy],
+    references: [users.id],
+    relationName: "agreementSigner",
+  }),
   emiSchedule: many(emiSchedule),
   payments: many(payments),
+  workflowSteps: many(loanWorkflowSteps),
 }));
 
 export const emiScheduleRelations = relations(emiSchedule, ({ one, many }) => ({
@@ -238,6 +308,37 @@ export const journalEntryLinesRelations = relations(journalEntryLines, ({ one })
   }),
 }));
 
+export const loanWorkflowStepsRelations = relations(loanWorkflowSteps, ({ one }) => ({
+  loan: one(loans, {
+    fields: [loanWorkflowSteps.loanId],
+    references: [loans.id],
+  }),
+  assignedUser: one(users, {
+    fields: [loanWorkflowSteps.assignedUserId],
+    references: [users.id],
+    relationName: "workflowAssignedUser",
+  }),
+  completedByUser: one(users, {
+    fields: [loanWorkflowSteps.completedBy],
+    references: [users.id],
+    relationName: "workflowCompletedByUser",
+  }),
+}));
+
+export const customFieldDefinitionsRelations = relations(customFieldDefinitions, ({ one }) => ({
+  creator: one(users, {
+    fields: [customFieldDefinitions.createdBy],
+    references: [users.id],
+  }),
+}));
+
+export const systemConfigRelations = relations(systemConfig, ({ one }) => ({
+  updatedByUser: one(users, {
+    fields: [systemConfig.updatedBy],
+    references: [users.id],
+  }),
+}));
+
 export const auditLogRelations = relations(auditLog, ({ one }) => ({
   user: one(users, {
     fields: [auditLog.userId],
@@ -281,6 +382,21 @@ export const insertJournalEntrySchema = createInsertSchema(journalEntries).omit(
   id: true,
   entryNumber: true,
   createdAt: true,
+});
+
+export const insertLoanWorkflowStepSchema = createInsertSchema(loanWorkflowSteps).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertCustomFieldDefinitionSchema = createInsertSchema(customFieldDefinitions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertSystemConfigSchema = createInsertSchema(systemConfig).omit({
+  id: true,
+  updatedAt: true,
 });
 
 // Export types
