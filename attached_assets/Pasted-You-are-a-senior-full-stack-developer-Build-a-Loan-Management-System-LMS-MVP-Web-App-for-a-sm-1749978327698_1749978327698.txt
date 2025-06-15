@@ -1,0 +1,144 @@
+You are a senior full-stack developer. Build a **Loan Management System (LMS) MVP Web App** for a small finance company using the following tech stack:
+
+- **Frontend**: Angular 17 + TypeScript + PrimeNG
+- **Backend**: Java 21 + Spring Boot
+- **Database**: PostgreSQL
+- **Other**: Docker-ready setup (Postgres + backend in Docker)
+
+---
+
+### 🔰 Purpose
+This is a functional MVP demo for a small finance client. It should simulate real-world lending and accounting processes (loan management, repayments, and double-entry accounting) without KYC, mobile app, or SMS integrations.
+
+---
+
+### ✅ Core MVP Features
+
+#### 1. **Authentication**
+- Simple email-password login (hardcoded or seeded users)
+- Roles:
+  - **Admin** (full access)
+  - **Staff** (restricted: cannot approve loans)
+
+---
+
+#### 2. **Customer Management**
+- Add/Edit/View customers
+- Fields:
+  - Full Name
+  - Phone
+  - Email
+  - Address
+  - ID Number (PAN, Aadhaar, etc.)
+
+---
+
+#### 3. **Loan Management**
+- Create/Edit/View loans assigned to a customer
+- Fields:
+  - Auto-generated Loan ID
+  - Customer (select from list)
+  - Principal Amount
+  - Interest Rate (%)
+  - Interest Type: **Flat** or **Reducing Balance**
+  - Tenure (in months)
+  - Repayment Frequency: Monthly or Weekly
+  - Grace Period (in days)
+  - Start Date
+  - Loan Status: Draft, Pending Verification, Approved, Rejected, Active, Closed
+  - Notes
+
+- Workflow:
+  - Staff can create/edit loans (status: Draft)
+  - Admin reviews → Approves → EMIs auto-generated
+  - Loans become Active after approval
+
+---
+
+#### 4. **Asset Handling**
+- Associate an asset (like a vehicle) with a loan
+- Asset Fields:
+  - Type (e.g., Bike, Car)
+  - Make/Model
+  - Registration Number
+  - Estimated Value
+  - Document Upload (simulated with dummy file field)
+
+---
+
+#### 5. **EMI & Penalty Engine**
+- Auto-generate EMI schedule when loan is approved
+- Each EMI entry has:
+  - Due Date, EMI Amount, Interest, Principal Split, Status (Paid/Unpaid), Payment Date
+- Penalty Rules:
+  - If overdue past grace period, charge ₹X per day
+  - Penalty amount must reflect in outstanding balance and accounting
+- Support for:
+  - Full payment
+  - Partial payment (optional)
+  - Foreclosure (early loan closure)
+
+---
+
+#### 6. **Accounting: Double-Entry System**
+- Implement basic **double-entry accounting**:
+  - Every transaction must have a debit and credit entry
+- Types of Entries:
+  - Loan disbursement (e.g., Cash/Bank → Loan Receivable)
+  - EMI repayment (e.g., Cash/Bank → Interest Income, Loan Principal)
+  - Penalty collection
+  - Foreclosure
+  - Manual journal entries
+
+- Provide a ledger view:
+  - Accounts: Cash/Bank, Loan Receivable, Interest Income, Penalty Income
+  - Filters: By date, account, loan
+- Allow admin to add **manual journal entries** with:
+  - Debit Account, Credit Account, Amount, Description, Date
+
+---
+
+#### 7. **Reports & Dashboard**
+- Dashboard:
+  - Active Loans Count
+  - Total Disbursed
+  - Total Collected (EMI + penalties)
+  - Overdue Loans Count
+
+- Reports:
+  - EMI History per Loan
+  - Customer Ledger
+  - Loan-wise interest/penalty income
+  - Downloadable CSV or PDF
+
+---
+
+#### 8. **Admin Tools**
+- Simple role-based access control (Admin, Staff)
+- Audit Logs:
+  - Record all actions: loan status changes, repayments, edits
+  - Store: User, Action, Timestamp, Entity ID
+- Seed with:
+  - 2 Users (1 Admin, 1 Staff)
+  - 3 Customers
+  - 2 Loans (1 Active, 1 Pending)
+
+---
+
+### ⚙️ Technical Setup
+- Use Spring Boot + Spring Data JPA
+- Use Angular service layer for API interactions
+- PrimeNG for UI (tables, forms, dashboards)
+- Provide:
+  - Dockerfile for backend
+  - docker-compose.yml to run Postgres + backend
+  - README with full setup instructions
+
+---
+
+### 🎯 Goals
+- Fully working MVP that simulates realistic lending workflows
+- Feature-complete for a small NBFC or lender to evaluate core LMS flows
+- Works locally via Docker with seeded data
+
+Generate clean, modular code and structure the frontend/backend projects using standard best practices.
