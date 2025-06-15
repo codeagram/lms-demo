@@ -160,11 +160,6 @@ export default function Dashboard() {
                     <ArrowUp className="w-4 h-4 mr-1" />
                     {metric.change}
                   </span>
-                ) : metric.changeType === "negative" ? (
-                  <span className="text-red-600 flex items-center">
-                    <TrendingDown className="w-4 h-4 mr-1" />
-                    {metric.change}
-                  </span>
                 ) : (
                   <span className="text-slate-500 flex items-center">
                     <AlertTriangle className="w-4 h-4 mr-1" />
