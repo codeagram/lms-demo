@@ -3,44 +3,60 @@
 @tailwind utilities;
 
 :root {
-  --background: hsl(0, 0%, 100%);
-  --foreground: hsl(20, 14.3%, 4.1%);
-  --muted: hsl(60, 4.8%, 95.9%);
-  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  /* PrimeNG Lara inspired colors with #A855F7 primary */
+  --background: hsl(0, 0%, 98%);
+  --foreground: hsl(215, 25%, 27%);
+  --muted: hsl(215, 20%, 95%);
+  --muted-foreground: hsl(215, 16%, 47%);
   --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --popover-foreground: hsl(215, 25%, 27%);
   --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(20, 14.3%, 4.1%);
-  --border: hsl(20, 5.9%, 90%);
-  --input: hsl(20, 5.9%, 90%);
-  --primary: hsl(207, 90%, 54%);
-  --primary-foreground: hsl(211, 100%, 99%);
-  --secondary: hsl(60, 4.8%, 95.9%);
-  --secondary-foreground: hsl(24, 9.8%, 10%);
-  --accent: hsl(60, 4.8%, 95.9%);
-  --accent-foreground: hsl(24, 9.8%, 10%);
-  --destructive: hsl(0, 84.2%, 60.2%);
-  --destructive-foreground: hsl(60, 9.1%, 97.8%);
-  --ring: hsl(20, 14.3%, 4.1%);
-  --radius: 0.5rem;
+  --card-foreground: hsl(215, 25%, 27%);
+  --border: hsl(215, 20%, 90%);
+  --input: hsl(215, 20%, 95%);
+  --primary: 262 83% 58%; /* #A855F7 */
+  --primary-foreground: hsl(0, 0%, 98%);
+  --secondary: hsl(215, 20%, 95%);
+  --secondary-foreground: hsl(215, 25%, 27%);
+  --accent: hsl(215, 20%, 95%);
+  --accent-foreground: hsl(215, 25%, 27%);
+  --destructive: hsl(0, 84%, 60%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: 262 83% 58%; /* #A855F7 */
+  --radius: 0.75rem;
 
-  /* Finance app specific colors */
-  --success: hsl(120, 61%, 34%);
+  /* PrimeNG Lara inspired status colors */
+  --success: hsl(142, 71%, 45%);
   --success-foreground: hsl(0, 0%, 98%);
   --warning: hsl(38, 92%, 50%);
   --warning-foreground: hsl(0, 0%, 98%);
-  --error: hsl(0, 72%, 51%);
+  --error: hsl(0, 84%, 60%);
   --error-foreground: hsl(0, 0%, 98%);
+  --info: hsl(199, 89%, 48%);
+  --info-foreground: hsl(0, 0%, 98%);
   
-  /* Sidebar colors */
-  --sidebar-background: hsl(0, 0%, 100%);
-  --sidebar-foreground: hsl(20, 14.3%, 4.1%);
-  --sidebar-primary: hsl(207, 90%, 54%);
-  --sidebar-primary-foreground: hsl(211, 100%, 99%);
-  --sidebar-accent: hsl(60, 4.8%, 95.9%);
-  --sidebar-accent-foreground: hsl(24, 9.8%, 10%);
-  --sidebar-border: hsl(20, 5.9%, 90%);
-  --sidebar-ring: hsl(20, 14.3%, 4.1%);
+  /* Sidebar colors matching Lara theme */
+  --sidebar-background: hsl(215, 28%, 17%);
+  --sidebar-foreground: hsl(213, 31%, 91%);
+  --sidebar-primary: 262 83% 58%; /* #A855F7 */
+  --sidebar-primary-foreground: hsl(0, 0%, 98%);
+  --sidebar-accent: hsl(215, 25%, 25%);
+  --sidebar-accent-foreground: hsl(213, 31%, 91%);
+  --sidebar-border: hsl(215, 25%, 25%);
+  --sidebar-ring: 262 83% 58%;
+
+  /* Lara theme surface colors */
+  --surface-0: hsl(0, 0%, 100%);
+  --surface-50: hsl(215, 20%, 98%);
+  --surface-100: hsl(215, 20%, 95%);
+  --surface-200: hsl(215, 16%, 87%);
+  --surface-300: hsl(215, 16%, 78%);
+  --surface-400: hsl(215, 16%, 69%);
+  --surface-500: hsl(215, 16%, 47%);
+  --surface-600: hsl(215, 19%, 35%);
+  --surface-700: hsl(215, 25%, 27%);
+  --surface-800: hsl(215, 28%, 17%);
+  --surface-900: hsl(215, 33%, 12%);
 }
 
 .dark {
@@ -90,8 +106,115 @@
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
-    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    @apply font-sans antialiased text-foreground;
+    background: linear-gradient(145deg, hsl(var(--surface-50)) 0%, hsl(var(--surface-100)) 100%);
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh;
+  }
+
+  .dark body {
+    background: linear-gradient(145deg, hsl(var(--surface-900)) 0%, hsl(var(--surface-800)) 100%);
+  }
+}
+
+@layer components {
+  /* PrimeNG Lara inspired component styles */
+  .lara-card {
+    @apply bg-white border border-slate-200 rounded-xl shadow-sm;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: all 0.2s ease-in-out;
+  }
+
+  .lara-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+  }
+
+  .lara-button-primary {
+    background: #A855F7;
+    color: white;
+    border: 1px solid #A855F7;
+    @apply rounded-lg px-4 py-2 font-medium transition-all duration-200;
+  }
+
+  .lara-button-primary:hover {
+    background: #9333EA;
+    border-color: #9333EA;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.25);
+  }
+
+  .lara-button-secondary {
+    background: white;
+    color: #6B7280;
+    border: 1px solid #E5E7EB;
+    @apply rounded-lg px-4 py-2 font-medium transition-all duration-200;
+  }
+
+  .lara-button-secondary:hover {
+    background: #F9FAFB;
+    border-color: #D1D5DB;
+  }
+
+  .lara-input {
+    background: white;
+    border: 1px solid #E5E7EB;
+    @apply rounded-lg px-3 py-2 transition-all duration-200;
+  }
+
+  .lara-input:focus {
+    border-color: #A855F7;
+    box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.1);
+    outline: none;
+  }
+
+  .lara-table {
+    background: white;
+    border: 1px solid #E5E7EB;
+    @apply rounded-xl overflow-hidden;
+  }
+
+  .lara-table-header {
+    background: #F8FAFC;
+    border-bottom: 1px solid #E5E7EB;
+    @apply text-sm font-semibold text-slate-700;
+  }
+
+  .lara-table-row {
+    border-bottom: 1px solid #F1F5F9;
+    @apply transition-all duration-150;
+  }
+
+  .lara-table-row:hover {
+    background: #F8FAFC;
+  }
+
+  .metric-card {
+    @apply bg-white rounded-xl p-6 border border-slate-200;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: all 0.2s ease-in-out;
+  }
+
+  .metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Status badges with Lara theme colors */
+  .status-active {
+    @apply bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full text-xs font-medium;
+  }
+
+  .status-pending {
+    @apply bg-amber-100 text-amber-800 px-2 py-1 rounded-full text-xs font-medium;
+  }
+
+  .status-rejected {
+    @apply bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium;
+  }
+
+  .status-overdue {
+    @apply bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-medium;
   }
 }
 

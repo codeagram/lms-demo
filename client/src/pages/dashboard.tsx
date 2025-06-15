@@ -82,7 +82,7 @@ export default function Dashboard() {
       changeType: "positive" as const,
       icon: FileText,
       color: "text-blue-600",
-      bgColor: "bg-blue-50",
+      bgColor: "bg-blue-100",
     },
     {
       title: "Total Disbursed",
@@ -90,8 +90,8 @@ export default function Dashboard() {
       change: "+8%",
       changeType: "positive" as const,
       icon: IndianRupee,
-      color: "text-green-600",
-      bgColor: "bg-green-50",
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-100",
     },
     {
       title: "Total Collected",
@@ -99,8 +99,8 @@ export default function Dashboard() {
       change: "+15%",
       changeType: "positive" as const,
       icon: HandCoins,
-      color: "text-yellow-600",
-      bgColor: "bg-yellow-50",
+      color: "#A855F7",
+      bgColor: "bg-purple-100",
     },
     {
       title: "Overdue Loans",
@@ -109,7 +109,7 @@ export default function Dashboard() {
       changeType: "neutral" as const,
       icon: AlertTriangle,
       color: "text-red-600",
-      bgColor: "bg-red-50",
+      bgColor: "bg-red-100",
     },
   ];
 
