@@ -1,0 +1,127 @@
+You are a senior full-stack developer. Enhance an existing Loan Management System (LMS) MVP demo to make it complete and realistic for a small finance company. This is a simulation-only system — no integrations, SMS, or external APIs are required. All data can be hardcoded, seeded, or mocked.
+
+---
+
+### 🎯 Objective
+Simulate the full loan lifecycle, accounting, customer onboarding, and branch-level control for evaluation by an NBFC client. Focus on visual polish, business logic, and real-world flows. The result should be a fully interactive MVP demo that mimics actual NBFC operations.
+
+---
+
+### ✅ Add the Following Features
+
+---
+
+#### 🧩 Multi-Branch Setup
+- Admin can create and manage branches (name, code, location)
+- Each user is assigned to one branch
+- Customers, Loans, and Assets are scoped to their branch
+- Staff can access only their branch’s data
+- Admin can view and filter all data across branches
+- Add branch filters to:
+  - Dashboard
+  - Reports
+  - Customer and Loan Lists
+- Seed data:
+  - 2 branches (e.g., Chennai, Delhi)
+  - 1 Admin (access to all)
+  - 1 Staff (assigned to a branch)
+  - At least 3 customers and 2 loans spread across branches
+
+---
+
+#### 🔁 Loan Workflow Steps
+- Simulate multi-step loan lifecycle: Basic Details → Verification → Approval → Disbursement
+- Show step name, status, approver, and date
+- Allow admin to advance steps
+
+---
+
+#### ⚙️ Dynamic Custom Fields
+- Admin can define custom loan fields (text, number, dropdown)
+- Custom fields appear on the loan creation form dynamically
+
+---
+
+#### 🧑‍🤝‍🧑 Referral Code System
+- Add optional referral code input on customer creation
+- Store and display referral code in customer profile and list
+- Simulate this as a way to track agents
+
+---
+
+#### 📜 Simulated Agreement / E-Sign Step
+- Final loan step before activation: “Agreement Signed” checkbox
+- Only admin can mark as signed
+- Required before marking loan as Active
+
+---
+
+#### 🔁 Reapplication Restriction
+- If a loan is rejected, block reapplication for X days (configurable)
+- Show notice to user if trying to reapply early
+
+---
+
+#### 🆔 KYC and Employment Verification (Simulated)
+- Add manual KYC status fields:
+  - PAN and Aadhaar number fields
+  - Document upload (mock input)
+  - Toggle: KYC Verified
+- Add Employment section:
+  - Upload salary slip or bank statement (mock)
+  - Toggle: Employment Verified
+
+---
+
+#### 📈 EMI Calculation Logic
+- Use actual formulas to generate EMI schedule:
+  - Flat Interest: Equal EMI with fixed interest
+  - Reducing Balance: Simulate amortized EMI schedule
+- Show EMI table: Due date, amount, principal, interest, status
+
+---
+
+#### 🧾 Penalty Rules
+- Define a grace period (in days) for EMIs
+- Charge ₹X per day after grace period if unpaid
+- Penalty adds to outstanding balance and appears in ledger
+
+---
+
+#### ⏰ In-App EMI Reminders
+- Show upcoming EMIs due in next 7 days
+- Highlight overdue EMIs
+- Display alerts on dashboard (no notifications needed)
+
+---
+
+#### 📘 Enhanced Ledger & Journal
+- Ledger view with running balances per account
+- Manual Journal Entry form:
+  - Debit Account, Credit Account, Amount, Date, Description
+  - Link to Loan or Customer
+- Transaction types: Loan Disbursement, EMI Payment, Penalty, Foreclosure
+
+---
+
+#### 🚫 Role-Based Access Control
+- Admin: Full access to all modules and branches
+- Staff: Cannot approve loans, access ledger, or journal
+- Hide buttons/actions conditionally in UI
+
+---
+
+### 🔧 UI & Usability Guidelines
+- Use clean layouts with cards, tabs, tables
+- Provide filters on all major tables (date range, branch, status)
+- Use color tags for loan statuses (e.g., Draft, Active, Rejected)
+- Show progress indicators on multi-step workflows
+- Ensure forms are grouped, responsive, and easy to use
+- Include sample seed data for quick testing
+
+---
+
+### 📦 Output
+Deliver a fully functional MVP demo covering all modules, workflows, and accounting flows expected by an NBFC. It should feel realistic and complete for evaluation, even without real integrations.
+
+Keep code modular, well-structured, and simulation-focused.

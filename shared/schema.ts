@@ -3,6 +3,20 @@ import { relations } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Branches table for multi-branch support
+export const branches = pgTable("branches", {
+  id: serial("id").primaryKey(),
+  branchCode: text("branch_code").notNull().unique(),
+  branchName: text("branch_name").notNull(),
+  location: text("location").notNull(),
+  address: text("address"),
+  phone: text("phone"),
+  email: text("email"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Users table for authentication and role management
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -10,6 +24,7 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   fullName: text("full_name").notNull(),
   role: text("role").notNull().default("staff"), // 'admin' or 'staff'
+  branchId: integer("branch_id").references(() => branches.id), // null for admin (access all branches)
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -35,6 +50,7 @@ export const customers = pgTable("customers", {
   employmentVerifiedAt: timestamp("employment_verified_at"),
   documents: jsonb("documents"), // Store uploaded document info
   lastRejectedAt: timestamp("last_rejected_at"), // Track rejection for cooldown
+  branchId: integer("branch_id").notNull().references(() => branches.id),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -49,6 +65,7 @@ export const assets = pgTable("assets", {
   registrationNumber: text("registration_number"),
   estimatedValue: decimal("estimated_value", { precision: 12, scale: 2 }),
   documents: jsonb("documents"), // Store document info
+  branchId: integer("branch_id").notNull().references(() => branches.id),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -64,6 +81,7 @@ export const loans = pgTable("loans", {
   tenure: integer("tenure").notNull(), // in months
   repaymentFrequency: text("repayment_frequency").notNull().default("monthly"), // 'monthly' or 'weekly'
   gracePeriod: integer("grace_period").notNull().default(0), // in days
+  penaltyRate: decimal("penalty_rate", { precision: 5, scale: 2 }).notNull().default("1.0"), // penalty per day percentage
   startDate: date("start_date"),
   status: text("status").notNull().default("draft"), // 'draft', 'pending', 'approved', 'rejected', 'active', 'closed'
   currentStep: text("current_step").notNull().default("basic_details"), // 'basic_details', 'verification', 'approval', 'disbursement', 'completed'
@@ -77,6 +95,7 @@ export const loans = pgTable("loans", {
   totalInterest: decimal("total_interest", { precision: 12, scale: 2 }),
   totalAmount: decimal("total_amount", { precision: 12, scale: 2 }),
   outstandingAmount: decimal("outstanding_amount", { precision: 12, scale: 2 }),
+  branchId: integer("branch_id").notNull().references(() => branches.id),
   createdBy: integer("created_by").notNull().references(() => users.id),
   approvedBy: integer("approved_by").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
@@ -202,7 +221,18 @@ export const auditLog = pgTable("audit_log", {
 });
 
 // Relations
-export const usersRelations = relations(users, ({ many }) => ({
+export const branchesRelations = relations(branches, ({ many }) => ({
+  users: many(users),
+  customers: many(customers),
+  assets: many(assets),
+  loans: many(loans),
+}));
+
+export const usersRelations = relations(users, ({ one, many }) => ({
+  branch: one(branches, {
+    fields: [users.branchId],
+    references: [branches.id],
+  }),
   createdLoans: many(loans, { relationName: "loanCreator" }),
   approvedLoans: many(loans, { relationName: "loanApprover" }),
   payments: many(payments),
@@ -211,6 +241,10 @@ export const usersRelations = relations(users, ({ many }) => ({
 }));
 
 export const customersRelations = relations(customers, ({ one, many }) => ({
+  branch: one(branches, {
+    fields: [customers.branchId],
+    references: [branches.id],
+  }),
   loans: many(loans),
   kycVerifier: one(users, {
     fields: [customers.kycVerifiedBy],
@@ -224,11 +258,19 @@ export const customersRelations = relations(customers, ({ one, many }) => ({
   }),
 }));
 
-export const assetsRelations = relations(assets, ({ many }) => ({
+export const assetsRelations = relations(assets, ({ one, many }) => ({
+  branch: one(branches, {
+    fields: [assets.branchId],
+    references: [branches.id],
+  }),
   loans: many(loans),
 }));
 
 export const loansRelations = relations(loans, ({ one, many }) => ({
+  branch: one(branches, {
+    fields: [loans.branchId],
+    references: [branches.id],
+  }),
   customer: one(customers, {
     fields: [loans.customerId],
     references: [customers.id],
@@ -399,7 +441,16 @@ export const insertSystemConfigSchema = createInsertSchema(systemConfig).omit({
   updatedAt: true,
 });
 
+// Add branch schema and types
+export const insertBranchSchema = createInsertSchema(branches).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Export types
+export type Branch = typeof branches.$inferSelect;
+export type InsertBranch = z.infer<typeof insertBranchSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Customer = typeof customers.$inferSelect;
