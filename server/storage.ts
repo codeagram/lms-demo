@@ -90,6 +90,36 @@ export interface IStorage {
   // Audit operations
   createAuditLog(log: Omit<AuditLog, 'id' | 'createdAt'>): Promise<void>;
   
+  // Loan workflow operations
+  createLoanWorkflowStep(step: InsertLoanWorkflowStep): Promise<LoanWorkflowStep>;
+  updateLoanWorkflowStep(id: number, step: Partial<InsertLoanWorkflowStep>): Promise<LoanWorkflowStep>;
+  getLoanWorkflowSteps(loanId: number): Promise<LoanWorkflowStep[]>;
+  advanceLoanWorkflow(loanId: number, userId: number, notes?: string): Promise<Loan>;
+  
+  // KYC and Employment verification
+  updateCustomerKYC(customerId: number, status: string, verifiedBy: number): Promise<Customer>;
+  updateCustomerEmployment(customerId: number, status: string, verifiedBy: number): Promise<Customer>;
+  canCustomerReapply(customerId: number): Promise<{ canReapply: boolean; daysLeft?: number }>;
+  
+  // Custom fields management
+  getCustomFieldDefinitions(): Promise<CustomFieldDefinition[]>;
+  createCustomFieldDefinition(field: InsertCustomFieldDefinition): Promise<CustomFieldDefinition>;
+  updateCustomFieldDefinition(id: number, field: Partial<InsertCustomFieldDefinition>): Promise<CustomFieldDefinition>;
+  deleteCustomFieldDefinition(id: number): Promise<void>;
+  
+  // System configuration
+  getSystemConfig(key?: string): Promise<SystemConfig[]>;
+  updateSystemConfig(key: string, value: string, updatedBy: number): Promise<SystemConfig>;
+  
+  // Agreement signing
+  signLoanAgreement(loanId: number, signedBy: number): Promise<Loan>;
+  
+  // Enhanced dashboard with workflow and KYC alerts
+  getWorkflowAlerts(): Promise<any>;
+  getKYCPendingList(): Promise<Customer[]>;
+  getUpcomingEMIs(days?: number): Promise<any[]>;
+  getOverdueEMIs(): Promise<any[]>;
+  
   // Initialize default data
   initializeDefaultData(): Promise<void>;
 }
@@ -1146,6 +1176,248 @@ export class DatabaseStorage implements IStorage {
         }
       }
     }
+  }
+
+  // Loan workflow operations
+  async createLoanWorkflowStep(step: InsertLoanWorkflowStep): Promise<LoanWorkflowStep> {
+    const [newStep] = await db.insert(loanWorkflowSteps).values(step).returning();
+    return newStep;
+  }
+
+  async updateLoanWorkflowStep(id: number, step: Partial<InsertLoanWorkflowStep>): Promise<LoanWorkflowStep> {
+    const [updatedStep] = await db.update(loanWorkflowSteps)
+      .set({ ...step, completedAt: new Date() })
+      .where(eq(loanWorkflowSteps.id, id))
+      .returning();
+    return updatedStep;
+  }
+
+  async getLoanWorkflowSteps(loanId: number): Promise<LoanWorkflowStep[]> {
+    return await db.select().from(loanWorkflowSteps).where(eq(loanWorkflowSteps.loanId, loanId));
+  }
+
+  async advanceLoanWorkflow(loanId: number, userId: number, notes?: string): Promise<Loan> {
+    const loan = await this.getLoanById(loanId);
+    if (!loan) throw new Error('Loan not found');
+
+    const steps = ['basic_details', 'verification', 'approval', 'disbursement', 'completed'];
+    const currentIndex = steps.indexOf(loan.currentStep);
+    
+    if (currentIndex < steps.length - 1) {
+      const nextStep = steps[currentIndex + 1];
+      
+      // Complete current step
+      await this.updateLoanWorkflowStep(loan.id, {
+        step: loan.currentStep,
+        status: 'completed',
+        completedBy: userId,
+        notes
+      });
+
+      // Update loan to next step
+      const [updatedLoan] = await db.update(loans)
+        .set({ currentStep: nextStep })
+        .where(eq(loans.id, loanId))
+        .returning();
+
+      // Create next step record
+      if (nextStep !== 'completed') {
+        await this.createLoanWorkflowStep({
+          loanId,
+          step: nextStep,
+          status: 'pending',
+          assignedUserId: userId
+        });
+      }
+
+      return updatedLoan;
+    }
+    
+    return loan;
+  }
+
+  // KYC and Employment verification
+  async updateCustomerKYC(customerId: number, status: string, verifiedBy: number): Promise<Customer> {
+    const [updatedCustomer] = await db.update(customers)
+      .set({
+        kycStatus: status,
+        kycVerifiedBy: verifiedBy,
+        kycVerifiedAt: new Date()
+      })
+      .where(eq(customers.id, customerId))
+      .returning();
+    return updatedCustomer;
+  }
+
+  async updateCustomerEmployment(customerId: number, status: string, verifiedBy: number): Promise<Customer> {
+    const [updatedCustomer] = await db.update(customers)
+      .set({
+        employmentStatus: status,
+        employmentVerifiedBy: verifiedBy,
+        employmentVerifiedAt: new Date()
+      })
+      .where(eq(customers.id, customerId))
+      .returning();
+    return updatedCustomer;
+  }
+
+  async canCustomerReapply(customerId: number): Promise<{ canReapply: boolean; daysLeft?: number }> {
+    const [customer] = await db.select().from(customers).where(eq(customers.id, customerId));
+    if (!customer?.lastRejectedAt) return { canReapply: true };
+
+    const [config] = await this.getSystemConfig('reapplication_cooldown_days');
+    const cooldownDays = parseInt(config?.configValue || '30');
+    
+    const daysSinceRejection = Math.floor(
+      (Date.now() - new Date(customer.lastRejectedAt).getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    if (daysSinceRejection >= cooldownDays) {
+      return { canReapply: true };
+    }
+
+    return { 
+      canReapply: false, 
+      daysLeft: cooldownDays - daysSinceRejection 
+    };
+  }
+
+  // Custom fields management
+  async getCustomFieldDefinitions(): Promise<CustomFieldDefinition[]> {
+    return await db.select().from(customFieldDefinitions)
+      .where(eq(customFieldDefinitions.isActive, true))
+      .orderBy(customFieldDefinitions.sortOrder);
+  }
+
+  async createCustomFieldDefinition(field: InsertCustomFieldDefinition): Promise<CustomFieldDefinition> {
+    const [newField] = await db.insert(customFieldDefinitions).values(field).returning();
+    return newField;
+  }
+
+  async updateCustomFieldDefinition(id: number, field: Partial<InsertCustomFieldDefinition>): Promise<CustomFieldDefinition> {
+    const [updatedField] = await db.update(customFieldDefinitions)
+      .set(field)
+      .where(eq(customFieldDefinitions.id, id))
+      .returning();
+    return updatedField;
+  }
+
+  async deleteCustomFieldDefinition(id: number): Promise<void> {
+    await db.update(customFieldDefinitions)
+      .set({ isActive: false })
+      .where(eq(customFieldDefinitions.id, id));
+  }
+
+  // System configuration
+  async getSystemConfig(key?: string): Promise<SystemConfig[]> {
+    if (key) {
+      return await db.select().from(systemConfig).where(eq(systemConfig.configKey, key));
+    }
+    return await db.select().from(systemConfig);
+  }
+
+  async updateSystemConfig(key: string, value: string, updatedBy: number): Promise<SystemConfig> {
+    const [config] = await db.select().from(systemConfig).where(eq(systemConfig.configKey, key));
+    
+    if (config) {
+      const [updated] = await db.update(systemConfig)
+        .set({ configValue: value, updatedBy, updatedAt: new Date() })
+        .where(eq(systemConfig.configKey, key))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db.insert(systemConfig)
+        .values({ configKey: key, configValue: value, updatedBy })
+        .returning();
+      return created;
+    }
+  }
+
+  // Agreement signing
+  async signLoanAgreement(loanId: number, signedBy: number): Promise<Loan> {
+    const [updatedLoan] = await db.update(loans)
+      .set({
+        agreementSigned: true,
+        agreementSignedBy: signedBy,
+        agreementSignedAt: new Date()
+      })
+      .where(eq(loans.id, loanId))
+      .returning();
+    return updatedLoan;
+  }
+
+  // Enhanced dashboard with workflow and KYC alerts
+  async getWorkflowAlerts(): Promise<any> {
+    const pendingApprovals = await db.select()
+      .from(loans)
+      .leftJoin(customers, eq(loans.customerId, customers.id))
+      .where(and(
+        eq(loans.status, 'pending'),
+        eq(loans.currentStep, 'approval')
+      ));
+
+    const stuckInVerification = await db.select()
+      .from(loans)
+      .leftJoin(customers, eq(loans.customerId, customers.id))
+      .where(and(
+        eq(loans.status, 'pending'),
+        eq(loans.currentStep, 'verification'),
+        sql`${loans.createdAt} < NOW() - INTERVAL '7 days'`
+      ));
+
+    return {
+      pendingApprovals: pendingApprovals.length,
+      stuckInVerification: stuckInVerification.length,
+      details: { pendingApprovals, stuckInVerification }
+    };
+  }
+
+  async getKYCPendingList(): Promise<Customer[]> {
+    return await db.select().from(customers)
+      .where(or(
+        eq(customers.kycStatus, 'pending'),
+        eq(customers.employmentStatus, 'pending')
+      ));
+  }
+
+  async getUpcomingEMIs(days: number = 7): Promise<any[]> {
+    return await db.select({
+      id: emiSchedule.id,
+      installmentNumber: emiSchedule.installmentNumber,
+      dueDate: emiSchedule.dueDate,
+      emiAmount: emiSchedule.emiAmount,
+      loanId: loans.loanId,
+      customerName: customers.fullName,
+      customerPhone: customers.phone
+    })
+    .from(emiSchedule)
+    .leftJoin(loans, eq(emiSchedule.loanId, loans.id))
+    .leftJoin(customers, eq(loans.customerId, customers.id))
+    .where(and(
+      eq(emiSchedule.status, 'unpaid'),
+      sql`${emiSchedule.dueDate} BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '${days} days'`
+    ));
+  }
+
+  async getOverdueEMIs(): Promise<any[]> {
+    return await db.select({
+      id: emiSchedule.id,
+      installmentNumber: emiSchedule.installmentNumber,
+      dueDate: emiSchedule.dueDate,
+      emiAmount: emiSchedule.emiAmount,
+      penaltyAmount: emiSchedule.penaltyAmount,
+      loanId: loans.loanId,
+      customerName: customers.fullName,
+      customerPhone: customers.phone,
+      daysOverdue: sql<number>`CURRENT_DATE - ${emiSchedule.dueDate}`
+    })
+    .from(emiSchedule)
+    .leftJoin(loans, eq(emiSchedule.loanId, loans.id))
+    .leftJoin(customers, eq(loans.customerId, customers.id))
+    .where(and(
+      inArray(emiSchedule.status, ['unpaid', 'overdue']),
+      sql`${emiSchedule.dueDate} < CURRENT_DATE`
+    ));
   }
 }
 

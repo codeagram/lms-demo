@@ -11,6 +11,8 @@ import Loans from "@/pages/loans";
 import Payments from "@/pages/payments";
 import Accounting from "@/pages/accounting";
 import Reports from "@/pages/reports";
+import Workflow from "@/pages/workflow";
+import KYCVerification from "@/pages/kyc-verification";
 import Sidebar from "@/components/layout/sidebar";
 import Topbar from "@/components/layout/topbar";
 import NotFound from "@/pages/not-found";

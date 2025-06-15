@@ -607,6 +607,288 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Loan workflow routes
+  app.get('/api/loans/:id/workflow', isAuthenticated, async (req, res) => {
+    try {
+      const loanId = parseInt(req.params.id);
+      const steps = await storage.getLoanWorkflowSteps(loanId);
+      res.json(steps);
+    } catch (error) {
+      console.error('Get loan workflow error:', error);
+      res.status(500).json({ message: "Failed to fetch loan workflow" });
+    }
+  });
+
+  app.post('/api/loans/:id/advance-workflow', isAuthenticated, async (req, res) => {
+    try {
+      const loanId = parseInt(req.params.id);
+      const { notes } = req.body;
+      const updatedLoan = await storage.advanceLoanWorkflow(loanId, req.session.user.id, notes);
+      
+      await storage.createAuditLog({
+        userId: req.session.user.id,
+        action: 'UPDATE',
+        entityType: 'LOAN_WORKFLOW',
+        entityId: loanId.toString(),
+        newValues: { step: updatedLoan.currentStep, notes },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+
+      res.json(updatedLoan);
+    } catch (error) {
+      console.error('Advance workflow error:', error);
+      res.status(500).json({ message: "Failed to advance workflow" });
+    }
+  });
+
+  // KYC and Employment verification routes
+  app.post('/api/customers/:id/kyc', isAuthenticated, async (req, res) => {
+    try {
+      const customerId = parseInt(req.params.id);
+      const { status } = req.body;
+      
+      if (!['pending', 'verified', 'rejected'].includes(status)) {
+        return res.status(400).json({ message: "Invalid KYC status" });
+      }
+
+      const updatedCustomer = await storage.updateCustomerKYC(customerId, status, req.session.user.id);
+      
+      await storage.createAuditLog({
+        userId: req.session.user.id,
+        action: 'UPDATE',
+        entityType: 'CUSTOMER_KYC',
+        entityId: customerId.toString(),
+        newValues: { kycStatus: status },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+
+      res.json(updatedCustomer);
+    } catch (error) {
+      console.error('Update KYC error:', error);
+      res.status(500).json({ message: "Failed to update KYC status" });
+    }
+  });
+
+  app.post('/api/customers/:id/employment', isAuthenticated, async (req, res) => {
+    try {
+      const customerId = parseInt(req.params.id);
+      const { status } = req.body;
+      
+      if (!['pending', 'verified', 'rejected'].includes(status)) {
+        return res.status(400).json({ message: "Invalid employment status" });
+      }
+
+      const updatedCustomer = await storage.updateCustomerEmployment(customerId, status, req.session.user.id);
+      
+      await storage.createAuditLog({
+        userId: req.session.user.id,
+        action: 'UPDATE',
+        entityType: 'CUSTOMER_EMPLOYMENT',
+        entityId: customerId.toString(),
+        newValues: { employmentStatus: status },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+
+      res.json(updatedCustomer);
+    } catch (error) {
+      console.error('Update employment error:', error);
+      res.status(500).json({ message: "Failed to update employment status" });
+    }
+  });
+
+  app.get('/api/customers/:id/reapplication-status', isAuthenticated, async (req, res) => {
+    try {
+      const customerId = parseInt(req.params.id);
+      const status = await storage.canCustomerReapply(customerId);
+      res.json(status);
+    } catch (error) {
+      console.error('Check reapplication status error:', error);
+      res.status(500).json({ message: "Failed to check reapplication status" });
+    }
+  });
+
+  // Custom fields management routes (Admin only)
+  app.get('/api/custom-fields', isAuthenticated, async (req, res) => {
+    try {
+      const fields = await storage.getCustomFieldDefinitions();
+      res.json(fields);
+    } catch (error) {
+      console.error('Get custom fields error:', error);
+      res.status(500).json({ message: "Failed to fetch custom fields" });
+    }
+  });
+
+  app.post('/api/custom-fields', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const fieldData = {
+        ...req.body,
+        createdBy: req.session.user.id
+      };
+      
+      const field = await storage.createCustomFieldDefinition(fieldData);
+      
+      await storage.createAuditLog({
+        userId: req.session.user.id,
+        action: 'CREATE',
+        entityType: 'CUSTOM_FIELD',
+        entityId: field.id.toString(),
+        newValues: fieldData,
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+
+      res.status(201).json(field);
+    } catch (error) {
+      console.error('Create custom field error:', error);
+      res.status(500).json({ message: "Failed to create custom field" });
+    }
+  });
+
+  app.put('/api/custom-fields/:id', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const fieldId = parseInt(req.params.id);
+      const updatedField = await storage.updateCustomFieldDefinition(fieldId, req.body);
+      
+      await storage.createAuditLog({
+        userId: req.session.user.id,
+        action: 'UPDATE',
+        entityType: 'CUSTOM_FIELD',
+        entityId: fieldId.toString(),
+        newValues: req.body,
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+
+      res.json(updatedField);
+    } catch (error) {
+      console.error('Update custom field error:', error);
+      res.status(500).json({ message: "Failed to update custom field" });
+    }
+  });
+
+  app.delete('/api/custom-fields/:id', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const fieldId = parseInt(req.params.id);
+      await storage.deleteCustomFieldDefinition(fieldId);
+      
+      await storage.createAuditLog({
+        userId: req.session.user.id,
+        action: 'DELETE',
+        entityType: 'CUSTOM_FIELD',
+        entityId: fieldId.toString(),
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+
+      res.json({ message: "Custom field deleted successfully" });
+    } catch (error) {
+      console.error('Delete custom field error:', error);
+      res.status(500).json({ message: "Failed to delete custom field" });
+    }
+  });
+
+  // System configuration routes (Admin only)
+  app.get('/api/system-config', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const { key } = req.query;
+      const configs = await storage.getSystemConfig(key as string);
+      res.json(configs);
+    } catch (error) {
+      console.error('Get system config error:', error);
+      res.status(500).json({ message: "Failed to fetch system configuration" });
+    }
+  });
+
+  app.post('/api/system-config', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const { key, value } = req.body;
+      const config = await storage.updateSystemConfig(key, value, req.session.user.id);
+      
+      await storage.createAuditLog({
+        userId: req.session.user.id,
+        action: 'UPDATE',
+        entityType: 'SYSTEM_CONFIG',
+        entityId: key,
+        newValues: { key, value },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+
+      res.json(config);
+    } catch (error) {
+      console.error('Update system config error:', error);
+      res.status(500).json({ message: "Failed to update system configuration" });
+    }
+  });
+
+  // Agreement signing route (Admin only)
+  app.post('/api/loans/:id/sign-agreement', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const loanId = parseInt(req.params.id);
+      const updatedLoan = await storage.signLoanAgreement(loanId, req.session.user.id);
+      
+      await storage.createAuditLog({
+        userId: req.session.user.id,
+        action: 'UPDATE',
+        entityType: 'LOAN_AGREEMENT',
+        entityId: loanId.toString(),
+        newValues: { agreementSigned: true },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+
+      res.json(updatedLoan);
+    } catch (error) {
+      console.error('Sign agreement error:', error);
+      res.status(500).json({ message: "Failed to sign loan agreement" });
+    }
+  });
+
+  // Enhanced dashboard routes
+  app.get('/api/dashboard/workflow-alerts', isAuthenticated, async (req, res) => {
+    try {
+      const alerts = await storage.getWorkflowAlerts();
+      res.json(alerts);
+    } catch (error) {
+      console.error('Get workflow alerts error:', error);
+      res.status(500).json({ message: "Failed to fetch workflow alerts" });
+    }
+  });
+
+  app.get('/api/dashboard/kyc-pending', isAuthenticated, async (req, res) => {
+    try {
+      const customers = await storage.getKYCPendingList();
+      res.json(customers);
+    } catch (error) {
+      console.error('Get KYC pending error:', error);
+      res.status(500).json({ message: "Failed to fetch KYC pending list" });
+    }
+  });
+
+  app.get('/api/dashboard/upcoming-emis', isAuthenticated, async (req, res) => {
+    try {
+      const days = parseInt(req.query.days as string) || 7;
+      const emis = await storage.getUpcomingEMIs(days);
+      res.json(emis);
+    } catch (error) {
+      console.error('Get upcoming EMIs error:', error);
+      res.status(500).json({ message: "Failed to fetch upcoming EMIs" });
+    }
+  });
+
+  app.get('/api/dashboard/overdue-emis', isAuthenticated, async (req, res) => {
+    try {
+      const emis = await storage.getOverdueEMIs();
+      res.json(emis);
+    } catch (error) {
+      console.error('Get overdue EMIs error:', error);
+      res.status(500).json({ message: "Failed to fetch overdue EMIs" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
