@@ -1,4 +1,5 @@
 import {
+  branches,
   users,
   customers,
   assets,
@@ -12,6 +13,8 @@ import {
   loanWorkflowSteps,
   customFieldDefinitions,
   systemConfig,
+  type Branch,
+  type InsertBranch,
   type User,
   type InsertUser,
   type Customer,
@@ -43,13 +46,20 @@ import { eq, desc, and, gte, lte, sql, or, like, inArray } from "drizzle-orm";
 import { calculateEMISchedule, calculatePenalty } from "./lib/financial-calculations";
 
 export interface IStorage {
+  // Branch operations
+  getBranches(): Promise<Branch[]>;
+  getBranchById(id: number): Promise<Branch | undefined>;
+  createBranch(branch: InsertBranch): Promise<Branch>;
+  updateBranch(id: number, branch: Partial<InsertBranch>): Promise<Branch>;
+  deleteBranch(id: number): Promise<void>;
+  
   // User operations
   getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   
   // Customer operations
-  getCustomers(): Promise<Customer[]>;
+  getCustomers(branchId?: number): Promise<Customer[]>;
   getCustomerById(id: number): Promise<CustomerWithLoans | undefined>;
   createCustomer(customer: InsertCustomer): Promise<Customer>;
   updateCustomer(id: number, customer: Partial<InsertCustomer>): Promise<Customer>;
@@ -60,7 +70,7 @@ export interface IStorage {
   getAssetById(id: number): Promise<Asset | undefined>;
   
   // Loan operations
-  getLoans(filters?: { status?: string; customerId?: number }): Promise<LoanWithDetails[]>;
+  getLoans(filters?: { status?: string; customerId?: number; branchId?: number }): Promise<LoanWithDetails[]>;
   getLoanById(id: number): Promise<LoanWithDetails | undefined>;
   createLoan(loan: InsertLoan): Promise<Loan>;
   updateLoan(id: number, loan: Partial<InsertLoan>): Promise<Loan>;
@@ -125,6 +135,40 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  // Branch operations
+  async getBranches(): Promise<Branch[]> {
+    return await db.select().from(branches).where(eq(branches.isActive, true));
+  }
+
+  async getBranchById(id: number): Promise<Branch | undefined> {
+    const [branch] = await db.select().from(branches).where(eq(branches.id, id));
+    return branch;
+  }
+
+  async createBranch(insertBranch: InsertBranch): Promise<Branch> {
+    const [branch] = await db
+      .insert(branches)
+      .values(insertBranch)
+      .returning();
+    return branch;
+  }
+
+  async updateBranch(id: number, updateBranch: Partial<InsertBranch>): Promise<Branch> {
+    const [branch] = await db
+      .update(branches)
+      .set(updateBranch)
+      .where(eq(branches.id, id))
+      .returning();
+    return branch;
+  }
+
+  async deleteBranch(id: number): Promise<void> {
+    await db
+      .update(branches)
+      .set({ isActive: false })
+      .where(eq(branches.id, id));
+  }
+
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
@@ -143,8 +187,12 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async getCustomers(): Promise<Customer[]> {
-    return await db.select().from(customers).where(eq(customers.isActive, true));
+  async getCustomers(branchId?: number): Promise<Customer[]> {
+    let query = db.select().from(customers).where(eq(customers.isActive, true));
+    if (branchId) {
+      query = query.where(eq(customers.branchId, branchId));
+    }
+    return await query;
   }
 
   async getCustomerById(id: number): Promise<CustomerWithLoans | undefined> {
