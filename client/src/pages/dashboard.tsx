@@ -120,27 +120,38 @@ export default function Dashboard() {
         {metricCards.map((metric, index) => {
           const Icon = metric.icon;
           return (
-            <Card key={index} className="border border-gray-200">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">{metric.title}</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-2">{metric.value}</p>
-                    <p className={`text-sm mt-1 flex items-center ${
-                      metric.changeType === 'positive' ? 'text-green-600' : 
-                      metric.changeType === 'neutral' ? 'text-red-600' : 'text-gray-600'
-                    }`}>
-                      {metric.changeType === 'positive' && <ArrowUp className="mr-1" size={12} />}
-                      {metric.changeType === 'neutral' && <AlertTriangle className="mr-1" size={12} />}
-                      {metric.change}
-                    </p>
-                  </div>
-                  <div className={`w-12 h-12 ${metric.bgColor} rounded-lg flex items-center justify-center`}>
-                    <Icon className={`${metric.color} text-xl`} size={24} />
-                  </div>
+            <div key={index} className="metric-card group">
+              <div className="flex items-center justify-between mb-4">
+                <div className={`p-3 rounded-lg ${metric.bgColor} group-hover:scale-110 transition-transform duration-200`}>
+                  <Icon 
+                    className="h-6 w-6" 
+                    style={{ color: typeof metric.color === 'string' && metric.color.startsWith('#') ? metric.color : undefined }}
+                    {...(typeof metric.color === 'string' && !metric.color.startsWith('#') ? { className: `h-6 w-6 ${metric.color}` } : {})}
+                    size={24} 
+                  />
                 </div>
-              </CardContent>
-            </Card>
+                <span className="text-sm font-medium text-slate-600">{metric.title}</span>
+              </div>
+              <div className="text-3xl font-bold text-slate-800 mb-2">{metric.value}</div>
+              <div className="flex items-center space-x-2 text-sm">
+                {metric.changeType === "positive" ? (
+                  <span className="text-emerald-600 flex items-center">
+                    <ArrowUp className="w-4 h-4 mr-1" />
+                    {metric.change}
+                  </span>
+                ) : metric.changeType === "negative" ? (
+                  <span className="text-red-600 flex items-center">
+                    <TrendingDown className="w-4 h-4 mr-1" />
+                    {metric.change}
+                  </span>
+                ) : (
+                  <span className="text-slate-500 flex items-center">
+                    <AlertTriangle className="w-4 h-4 mr-1" />
+                    {metric.change}
+                  </span>
+                )}
+              </div>
+            </div>
           );
         })}
       </div>
