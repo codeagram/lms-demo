@@ -1043,6 +1043,7 @@ export class DatabaseStorage implements IStorage {
       // Pending loans (awaiting approval)
       loans.push(
         await this.createLoan({
+          branchId: delhiBranch.id,
           customerId: sampleCustomers[0].id,
           assetId: assets[0].id,
           principalAmount: '250000',
@@ -1057,6 +1058,7 @@ export class DatabaseStorage implements IStorage {
           createdBy: staffUser.id,
         }),
         await this.createLoan({
+          branchId: chennaBranch.id,
           customerId: sampleCustomers[1].id,
           assetId: assets[1].id,
           principalAmount: '175000',
@@ -1075,6 +1077,7 @@ export class DatabaseStorage implements IStorage {
       // Active loans (approved and disbursed)
       loans.push(
         await this.createLoan({
+          branchId: delhiBranch.id,
           customerId: sampleCustomers[2].id,
           assetId: assets[2].id,
           principalAmount: '85000',
@@ -1089,6 +1092,7 @@ export class DatabaseStorage implements IStorage {
           createdBy: staffUser.id,
         }),
         await this.createLoan({
+          branchId: chennaBranch.id,
           customerId: sampleCustomers[3].id,
           assetId: assets[3].id,
           principalAmount: '380000',
@@ -1103,6 +1107,7 @@ export class DatabaseStorage implements IStorage {
           createdBy: staffUser.id,
         }),
         await this.createLoan({
+          branchId: delhiBranch.id,
           customerId: sampleCustomers[4].id,
           assetId: assets[4].id,
           principalAmount: '550000',
@@ -1117,6 +1122,7 @@ export class DatabaseStorage implements IStorage {
           createdBy: staffUser.id,
         }),
         await this.createLoan({
+          branchId: chennaBranch.id,
           customerId: sampleCustomers[5].id,
           assetId: assets[5].id,
           principalAmount: '1800000',
@@ -1131,6 +1137,7 @@ export class DatabaseStorage implements IStorage {
           createdBy: adminUser.id,
         }),
         await this.createLoan({
+          branchId: delhiBranch.id,
           customerId: sampleCustomers[6].id,
           assetId: assets[6].id,
           principalAmount: '950000',
@@ -1145,6 +1152,7 @@ export class DatabaseStorage implements IStorage {
           createdBy: staffUser.id,
         }),
         await this.createLoan({
+          branchId: chennaBranch.id,
           customerId: sampleCustomers[7].id,
           assetId: assets[7].id,
           principalAmount: '650000',

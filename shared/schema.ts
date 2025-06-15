@@ -136,12 +136,12 @@ export const payments = pgTable("payments", {
 });
 
 // Chart of Accounts for double-entry accounting
-export const accounts = pgTable("accounts", {
+export const accounts: any = pgTable("accounts", {
   id: serial("id").primaryKey(),
   accountCode: text("account_code").notNull().unique(),
   accountName: text("account_name").notNull(),
   accountType: text("account_type").notNull(), // 'asset', 'liability', 'equity', 'income', 'expense'
-  parentAccountId: integer("parent_account_id").references(() => accounts.id),
+  parentAccountId: integer("parent_account_id"),
   balance: decimal("balance", { precision: 12, scale: 2 }).notNull().default("0"),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow(),
