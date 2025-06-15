@@ -47,10 +47,10 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary to-blue-700 px-4">
+    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'linear-gradient(145deg, hsl(215, 20%, 98%) 0%, hsl(215, 16%, 87%) 100%)' }}>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-16 h-16 bg-primary rounded-full flex items-center justify-center">
+          <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: '#A855F7' }}>
             <Building2 className="text-white text-2xl" size={32} />
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">
@@ -116,7 +116,7 @@ export default function Login() {
             
             <Button
               type="submit"
-              className="w-full bg-primary hover:bg-blue-700"
+              className="lara-button-primary w-full"
               disabled={isLoginPending}
             >
               {isLoginPending ? (
